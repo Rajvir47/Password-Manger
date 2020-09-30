@@ -1,67 +1,55 @@
+import csv
+from csv import DictWriter
 
-import sqlite3
-from hashlib import sha256
-
-
-ADMIN_PASSWORD = "123456"
-
-connect = input("What is your password?\n")
-
-while connect != ADMIN_PASSWORD:
-    connect = input("What is your password?\n")
-    if connect == "q":
-        break
-
-conn = sqlite3.connect('pass_manager.db')
-
-def create_password(pass_key, service, admin_pass):
-    return sha256(admin_pass.encode('utf-8') + service.lower().encode('utf-8') + pass_key.encode('utf-8')).hexdigest()[:15]
-
-def get_hex_key(admin_pass, service):
-    return sha256(admin_pass.encode('utf-8') + service.lower().encode('utf-8')).hexdigest()
-
-def get_password(admin_pass, service):
-    secret_key = get_hex_key(admin_pass, service)
-    cursor = conn.execute("SELECT * from KEYS WHERE PASS_KEY=" + '"' + secret_key + '"')
-
-    file_string = ""
-    for row in cursor:
-        file_string = row[0]
-    return create_password(file_string, service, admin_pass)
-
-def add_password(service, admin_pass):
-    secret_key = get_hex_key(admin_pass, service)
-
-    command = 'INSERT INTO KEYS (PASS_KEY) VALUES (%s);' %('"' + secret_key +'"')        
-    conn.execute(command)
-    conn.commit()
-    return create_password(secret_key, service, admin_pass)
-
-if connect == ADMIN_PASSWORD:
-    try:
-        conn.execute('''CREATE TABLE KEYS
-            (PASS_KEY TEXT PRIMARY KEY NOT NULL);''')
-        print("Your safe has been created!\nWhat would you like to store in it today?")
-    except:
-        print("You have a safe, what would you like to do today?")
-    
-    
+admin_pass_ask = input('Enter Password : ')
+if admin_pass_ask == 'hello':
+    print('Hello\nNice to help\nWhat do you want to do :-')
     while True:
-        print("\n"+ "*"*15)
-        print("Commands:")
-        print("q = quit program")
-        print("gp = get password")
-        print("sp = store password")
-        print("*"*15)
-        input_ = input(":")
-
-        if input_ == "q":
-            break
-        if input_ == "sp":
-            service = input("What is the name of the service?\n")
-            print("\n" + service.capitalize() + " password created:\n" + add_password(service, ADMIN_PASSWORD))
-        if input_ == "gp":
-            service = input("What is the name of the service?\n")
-            print("\n" + service.capitalize() + " password:\n"+get_password(ADMIN_PASSWORD, service))
-
+        print('\n1.)All Passwords\n2.)Store Password\n3.)Get New Password')
+        what_to_do = input('Enter (1/2/3) : ')
+        if what_to_do == '1' or what_to_do == 'All Passwords' or what_to_do == 'all passwords':
+            with open ('Games Accounts.csv','r') as file:
+                csvreader = csv.reader( file )
+                fields = next( csvreader )
+                for row in file:
+                    print(row.replace(",","\n"))
+        elif what_to_do == '2' or what_to_do == 'Store Password' or what_to_do == 'store password':
+            ask_service = input('Which Service : ')
+            ask_email = input("Which Email : ")
+            ask_password = input('Which Password : ')
+            with open ("Games Accounts.csv","a") as f:
+                dict_writer = DictWriter(f, fieldnames=["service","email","password"])
+                dict_writer.writerow({
+                    'service':"service - "+ask_service,
+                    'email':"email - "+ask_email,
+                    "password":"password - "+ask_password
+                })
+            print('Done !')
+        elif what_to_do == '3' or what_to_do == 'Get New Password' or what_to_do == 'get new password':
+            import random
+            passlen = int(input('Length of Password : '))
+            print('What Type Of Password Combination :\n'
+                  '1.)abc+123+ABC+(#$&)\n'
+                  '2.)abc+123+(#$&)\n'
+                  '3.)abc+(#$&)')
+            type_pass = input('Enter (1/2/3/4): ')
+            if type_pass == '1':
+                s = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*"
+                p = "".join( random.sample( s, passlen ) )
+                print(p)
+            elif type_pass == '2':
+                abc = 'abcdefghijklmnopqrstuvwxyz'
+                numbers = '0123456789'
+                hashs = '!@#$%^&*'
+                s = abc+numbers+hashs
+                p = "".join( random.sample( s, passlen ) )
+                print( p )
+            elif type_pass == '3':
+                abc = 'abcdefghijklmnopqrstuvwxyz'
+                hashs = '!@#$%^&*'
+                s = abc + hashs
+                p = "".join( random.sample( s, passlen ) )
+                print( p )
+        else:
+            print('Invalid Input')
 
