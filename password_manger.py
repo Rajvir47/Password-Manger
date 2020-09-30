@@ -8,7 +8,7 @@ if admin_pass_ask == 'hello':
         print('\n1.)All Passwords\n2.)Store Password\n3.)Get New Password')
         what_to_do = input('Enter (1/2/3) : ')
         if what_to_do == '1' or what_to_do == 'All Passwords' or what_to_do == 'all passwords':
-            with open ('Games Accounts.csv','r') as file:
+            with open ('Passwords.csv','r') as file:
                 csvreader = csv.reader( file )
                 fields = next( csvreader )
                 for row in file:
